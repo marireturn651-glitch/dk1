@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CDAC CCEE Mock Test — RTOS · IoT · Device Drivers · Aptitude</title>
+<style>
+  :root{
+    --ink:#10151c;
+    --paper:#f4f2ec;
+    --panel:#ffffff;
+    --line:#dcd7c9;
+    --navy:#16243d;
+    --navy-deep:#0c1626;
+    --gold:#b5862f;
+    --gold-soft:#e8c97a;
+    --green:#2f7d56;
+    --green-soft:#e3f1e9;
+    --violet:#6a4e9c;
+    --violet-soft:#ece6f6;
+    --red:#a23b3b;
+    --muted:#6b6557;
+    font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  @font-face{font-family:'IBM Plex Sans';src:local('Segoe UI');}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    background:var(--navy);
+    color:#f4f2ec;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 26px;
+    border-bottom:3px solid var(--gold);
+  }
+  .brand{
+    display:flex; align-items:center; gap:12px;
+  }
+  .brand .mark{
+    width:34px;height:34px;border-radius:3px;
+    background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:var(--navy-deep);font-size:15px;
+    font-family:Georgia,serif;
+  }
+  .brand .title{font-size:14px;letter-spacing:.04em;line-height:1.3;}
+  .brand .title b{display:block;font-size:16px;font-family:Georgia,'Times New Roman',serif;letter-spacing:.02em;}
+  .topbar .meta{display:flex; gap:26px; font-size:12.5px; color:#cfd6e2;}
+  .topbar .meta div b{color:#fff; display:block; font-size:13.5px; font-family:'Courier New',monospace;}
+
+  /* ---------- LAYOUT ---------- */
+  .stage{
+    max-width:1280px;margin:0 auto;padding:22px 22px 60px;
+  }
+  .examGrid{
+    display:grid;
+    grid-template-columns: 1fr 300px;
+    gap:20px;
+  }
+  @media (max-width: 880px){ .examGrid{grid-template-columns:1fr;} }
+
+  /* ---------- QUESTION PANEL ---------- */
+  .qpanel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .qbar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:13px 20px; border-bottom:1px solid var(--line);
+    background:#fbfaf6;
+  }
+  .qbar .tag{
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    padding:4px 10px; border-radius:20px; font-weight:600;
+  }
+  .tag-RTOS{background:#eaf1fb;color:#2a5a96;}
+  .tag-IOT{background:var(--green-soft);color:var(--green);}
+  .tag-EDD{background:var(--violet-soft);color:var(--violet);}
+  .tag-APT{background:#fbeee0;color:#a3601a;}
+  .qbar .qnum{font-family:Georgia,serif; font-size:15px; color:var(--muted);}
+
+  .qbody{padding:26px 30px 10px;}
+  .qtext{font-size:17.5px; line-height:1.55; margin:0 0 22px; font-weight:500;}
+  .options{display:flex;flex-direction:column;gap:10px;margin-bottom:8px;}
+  .opt{
+    display:flex; align-items:flex-start; gap:12px;
+    border:1px solid var(--line); border-radius:4px;
+    padding:12px 16px; cursor:pointer; background:#fff;
+    transition:.12s border-color, .12s background;
+    font-size:15px; line-height:1.4;
+  }
+  .opt:hover{border-color:var(--gold);}
+  .opt.selected{border-color:var(--gold); background:#fdf6e8;}
+  .opt input{margin-top:2px; accent-color:var(--gold);}
+  .opt .lab{font-weight:700; color:var(--muted); width:18px;}
+
+  .reveal{
+    margin:18px 0 4px; padding:14px 16px; border-radius:4px;
+    font-size:14px; line-height:1.5; display:none;
+  }
+  .reveal.show{display:block;}
+  .reveal.correct{background:var(--green-soft); border:1px solid #b9dcc7; color:#1f5b3d;}
+  .reveal.wrong{background:#fbe7e7; border:1px solid #ecbcbc; color:#7c2c2c;}
+
+  .actionRow{
+    display:flex; flex-wrap:wrap; gap:10px;
+    padding:18px 30px 24px; border-top:1px solid var(--line);
+    background:#fbfaf6;
+  }
+  button{
+    font-family:inherit; font-size:13.5px; cursor:pointer;
+    border-radius:3px; padding:10px 16px; border:1px solid var(--line);
+    background:#fff; color:var(--ink); font-weight:600;
+  }
+  button:hover{border-color:var(--navy);}
+  .btn-primary{background:var(--navy); color:#fff; border-color:var(--navy);}
+  .btn-primary:hover{background:var(--navy-deep);}
+  .btn-gold{background:var(--gold); border-color:var(--gold); color:#2a1d04;}
+  .btn-gold:hover{background:#9c7126;}
+  .btn-ghost{background:transparent;}
+  .spacer{flex:1;}
+
+  /* ---------- SIDE PANEL ---------- */
+  .side{display:flex; flex-direction:column; gap:16px;}
+  .timerCard{
+    background:var(--navy); color:#fff; border-radius:4px;
+    padding:16px 18px; text-align:center;
+  }
+  .timerCard .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#b9c3d6;}
+  .timerCard .val{font-family:'Courier New',monospace; font-size:26px; font-weight:700; margin-top:4px; color:var(--gold-soft);}
+
+  .legend{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px;
+    padding:14px 16px; font-size:12px;
+  }
+  .legend .row{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .legend .sw{width:14px;height:14px;border-radius:3px;flex-shrink:0;border:1px solid var(--line);}
+
+  .navCard{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:14px 16px;
+  }
+  .navCard h4{margin:0 0 10px; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
+  .navGrid{display:grid; grid-template-columns:repeat(8,1fr); gap:6px;}
+  .navBtn{
+    aspect-ratio:1; border-radius:3px; border:1px solid var(--line);
+    background:#fff; font-size:12px; font-weight:600; cursor:pointer;
+    display:flex;align-items:center;justify-content:center; padding:0;
+  }
+  .navBtn.current{outline:2px solid var(--navy); outline-offset:1px;}
+  .navBtn.answered{background:var(--green); color:#fff; border-color:var(--green);}
+  .navBtn.marked{background:var(--violet); color:#fff; border-color:var(--violet);}
+  .navBtn.answeredmarked{background:var(--gold); color:#2a1d04; border-color:var(--gold);}
+
+  .subjJump{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;}
+  .subjJump button{flex:1; font-size:11px; padding:7px 6px;}
+
+  .statBox{
+    background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:14px 16px;
+    font-size:13px;
+  }
+  .statBox .row{display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed var(--line);}
+  .statBox .row:last-child{border-bottom:none;}
+
+  /* ---------- START / RESULT SCREENS ---------- */
+  .screen{
+    max-width:760px; margin:50px auto; background:var(--panel);
+    border:1px solid var(--line); border-radius:4px; padding:42px 46px;
+  }
+  .screen h1{
+    font-family:Georgia,'Times New Roman',serif; font-size:30px; margin:0 0 6px; color:var(--navy);
+  }
+  .screen p.sub{color:var(--muted); margin-top:0; font-size:14.5px;}
+  .syllabusGrid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:28px 0;}
+  .sylCard{border:1px solid var(--line); border-radius:4px; padding:14px 16px;}
+  .sylCard .n{font-family:Georgia,serif; font-size:26px; color:var(--gold); line-height:1;}
+  .sylCard .t{font-size:13.5px; font-weight:700; margin:4px 0 2px;}
+  .sylCard .d{font-size:12px; color:var(--muted);}
+
+  .resultGrid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin:24px 0;}
+  .scoreCard{border:1px solid var(--line); border-radius:4px; padding:16px;}
+  .scoreCard .big{font-family:Georgia,serif; font-size:28px; color:var(--navy);}
+  .scoreCard .lbl{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-top:4px;}
+  .bar{height:8px;border-radius:4px;background:#ece8db;overflow:hidden; margin-top:8px;}
+  .bar > div{height:100%; background:var(--green);}
+
+  .reviewList{margin-top:30px;}
+  .reviewItem{border:1px solid var(--line); border-radius:4px; padding:14px 16px; margin-bottom:10px;}
+  .reviewItem .q{font-weight:600; margin-bottom:6px; font-size:14px;}
+  .reviewItem .a{font-size:13px; margin:2px 0;}
+  .reviewItem .ok{color:var(--green);}
+  .reviewItem .bad{color:var(--red);}
+  .hidden{display:none !important;}
+  footer.note{text-align:center; color:var(--muted); font-size:11.5px; margin-top:30px;}
+</style>
+</head>
+<body>
+
+<!-- ============ START SCREEN ============ -->
+<div class="screen" id="startScreen">
+  <h1>CDAC CCEE Mock Test</h1>
+  <p class="sub">PGCP-ESD &middot; Practice set covering RTOS, IoT, Embedded Device Drivers &amp; Aptitude &middot; 100 questions</p>
+  <div class="syllabusGrid">
+    <div class="sylCard"><div class="n">25</div><div class="t">Real-Time Operating Systems</div><div class="d">Scheduling, IPC, interrupts, priority inversion, FreeRTOS</div></div>
+    <div class="sylCard"><div class="n">25</div><div class="t">Internet of Things</div><div class="d">Protocols, wireless standards, security, edge &amp; embedded AI</div></div>
+    <div class="sylCard"><div class="n">25</div><div class="t">Embedded Device Drivers</div><div class="d">Linux kernel modules, char drivers, IOCTL, I2C/SPI, GPIO</div></div>
+    <div class="sylCard"><div class="n">25</div><div class="t">Aptitude</div><div class="d">Quant, reasoning, series, blood relations, data sufficiency</div></div>
+  </div>
+  <label style="font-size:13px; display:flex; gap:8px; align-items:center; margin-bottom:18px;">
+    <input type="checkbox" id="instantFeedback"> Show answer explanation immediately after each attempt (practice mode)
+  </label>
+  <button class="btn-gold" id="startBtn" style="width:100%; padding:14px; font-size:15px;">Begin Test</button>
+  <footer class="note">Timer: 60 minutes &middot; Negative marking: none &middot; Free to fork on GitHub</footer>
+</div>
+
+<!-- ============ EXAM SCREEN ============ -->
+<div id="examScreen" class="hidden">
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">CC</div>
+      <div class="title">CDAC CCEE Practice Portal<b id="candidateLine">Session #CCEE-2026</b></div>
+    </div>
+    <div class="meta">
+      <div>Answered<b id="metaAnswered">0 / 100</b></div>
+      <div>Marked<b id="metaMarked">0</b></div>
+      <div>Unanswered<b id="metaUnanswered">100</b></div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="examGrid">
+      <!-- question panel -->
+      <div class="qpanel">
+        <div class="qbar">
+          <span class="tag" id="qTag">RTOS</span>
+          <span class="qnum" id="qPos">Question 1 of 100</span>
+        </div>
+        <div class="qbody">
+          <p class="qtext" id="qText">Loading…</p>
+          <div class="options" id="qOptions"></div>
+          <div class="reveal" id="qReveal"></div>
+        </div>
+        <div class="actionRow">
+          <button class="btn-ghost" id="clearBtn">Clear Response</button>
+          <button class="btn-ghost" id="markBtn">Mark for Review</button>
+          <div class="spacer"></div>
+          <button id="prevBtn">&larr; Previous</button>
+          <button class="btn-primary" id="nextBtn">Save &amp; Next &rarr;</button>
+        </div>
+      </div>
+
+      <!-- side panel -->
+      <div class="side">
+        <div class="timerCard">
+          <div class="lbl">Time Remaining</div>
+          <div class="val" id="timerVal">60:00</div>
+        </div>
+
+        <div class="legend">
+          <div class="row"><span class="sw" style="background:var(--green);border-color:var(--green);"></span> Answered</div>
+          <div class="row"><span class="sw" style="background:var(--violet);border-color:var(--violet);"></span> Marked for review</div>
+          <div class="row"><span class="sw" style="background:var(--gold);border-color:var(--gold);"></span> Answered &amp; marked</div>
+          <div class="row"><span class="sw" style="background:#fff;"></span> Not visited / unanswered</div>
+        </div>
+
+        <div class="navCard">
+          <h4>Question Navigator</h4>
+          <div class="navGrid" id="navGrid"></div>
+          <div class="subjJump">
+            <button data-jump="RTOS">RTOS</button>
+            <button data-jump="IOT">IoT</button>
+            <button data-jump="EDD">Drivers</button>
+            <button data-jump="APT">Aptitude</button>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="submitBtn" style="padding:13px;">Submit Test</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RESULT SCREEN ============ -->
+<div class="screen hidden" id="resultScreen" style="max-width:900px;">
+  <h1>Your Results</h1>
+  <p class="sub">Here's how the attempt broke down across all four subjects.</p>
+  <div class="resultGrid" id="resultGrid"></div>
+  <div class="resultGrid" id="subjectGrid" style="grid-template-columns:repeat(4,1fr);"></div>
+  <div style="margin:20px 0; display:flex; gap:10px;">
+    <button class="btn-primary" id="reviewBtn">Review All Answers</button>
+    <button class="btn-gold" id="retakeBtn">Retake Test</button>
+  </div>
+  <div class="reviewList hidden" id="reviewList"></div>
+</div>
+
+<script>
+/* ===================== QUESTION BANK ===================== */
+const Q = [];
+
+/* ---------- RTOS (25) ---------- */
+const rtos = [
+["Which best defines a hard real-time system?",["Missing a deadline causes system failure","Deadlines are flexible","No deadlines exist","Deadlines only affect performance"],0,
+ "In hard real-time systems, a missed deadline is treated as a system failure, unlike soft real-time systems where it merely degrades quality."],
+["Which of these is NOT a typical task state in an RTOS?",["Running","Ready","Blocked","Compiled"],3,
+ "Compiled is a build-time concept, not a runtime task state. RTOS tasks move between Running, Ready, Blocked/Suspended."],
+["Context switching refers to:",["Switching power modes","Saving and restoring CPU state between tasks","Switching network protocols","Compiling context-free grammars"],1,
+ "A context switch saves the registers/stack pointer of the outgoing task and restores them for the incoming task."],
+["In preemptive scheduling, a higher priority task:",["Waits for the running task to finish","Can interrupt and take over the CPU","Is always run last","Cannot run until reset"],1,
+ "Preemptive schedulers immediately switch to a higher priority task that becomes ready, interrupting the current one."],
+["Rate Monotonic (RM) scheduling assigns task priority based on:",["Task arrival time","Task period — shorter period gets higher priority","Random assignment","Memory usage"],1,
+ "RM is a fixed-priority scheme where tasks with shorter periods are assigned higher priority."],
+["Earliest Deadline First (EDF) is an example of:",["Static priority scheduling","Dynamic priority scheduling","FIFO scheduling","Round robin only"],1,
+ "EDF recalculates priority dynamically — the task with the nearest absolute deadline always runs next."],
+["Priority inversion occurs when:",["A high priority task is blocked by a lower priority task holding a needed resource","Tasks have equal priority","ISR priority is higher than tasks","Round robin scheduling is used"],0,
+ "Classic priority inversion: a high priority task waits on a mutex held by a low priority task, effectively inverting their priorities."],
+["The priority ceiling protocol primarily helps prevent:",["Stack overflow","Unbounded priority inversion","Memory leaks","Deadline misses in soft RTOS only"],1,
+ "Priority ceiling bounds the blocking time a high-priority task can experience, preventing unbounded inversion."],
+["A mutex differs from a binary semaphore mainly because a mutex:",["Supports priority inheritance and has ownership semantics","Can only be binary","Can be used freely inside an ISR","Has no real difference"],0,
+ "Mutexes are owned by the locking task and typically support priority inheritance; semaphores have no ownership concept."],
+["Message queues in an RTOS are primarily used for:",["Inter-task communication","Memory protection","Compiling tasks","Power management"],0,
+ "Queues let tasks (and ISRs) pass data items between each other safely."],
+["Stack overflow detection in an RTOS is typically implemented by:",["Checking watermark/canary values at stack boundaries","Disabling interrupts","Increasing CPU clock","Ignoring it — RTOS handles it automatically"],0,
+ "A canary/watermark pattern written at the end of a task's stack is checked periodically or on context switch to detect overflow."],
+["The RTOS tick is generated by:",["A periodic hardware timer interrupt","A software polling loop only","The idle task","The compiler"],0,
+ "A hardware timer fires at a fixed interval to drive the scheduler's time base (the 'tick')."],
+["Tickless idle mode is used primarily to:",["Increase CPU clock speed","Reduce power consumption when no task needs to run","Improve graphics rendering","Disable all interrupts permanently"],1,
+ "Tickless idle suppresses the periodic tick interrupt during idle periods so the MCU can sleep longer and save power."],
+["Code running inside an ISR should generally:",["Perform long computations","Be kept as short as possible, deferring heavy work to a task","Always call blocking RTOS functions","Never be used in RTOS systems"],1,
+ "ISRs should do minimal work and hand off processing to a deferred task to keep interrupt latency low."],
+["Deferred interrupt handling typically relies on:",["A deferred procedure / task notification mechanism","Increasing interrupt priority","Disabling the interrupt forever","Polling only"],0,
+ "The ISR signals a task (e.g. via semaphore/notification) which then performs the heavier processing outside interrupt context."],
+["A watchdog timer in an embedded RTOS system is used to:",["Reset the system if a task fails to refresh it in time","Increase scheduling speed","Manage memory allocation","Encrypt data"],0,
+ "If the watchdog isn't periodically 'kicked' by healthy software, it resets the system — a safety net against hangs."],
+["Worst-Case Execution Time (WCET) is important because it:",["Helps determine if deadlines can be met","Is used only for memory sizing","Has no role in scheduling analysis","Only applies to soft real-time systems"],0,
+ "Schedulability analyses (RM, EDF, response-time analysis) all rely on a reliable WCET estimate per task."],
+["A critical section in RTOS programming is:",["A code region needing exclusive access to a shared resource","The fastest part of the code","A section that always runs in an ISR","Unrelated to synchronization"],0,
+ "Critical sections protect shared data from concurrent access using locks, disabling interrupts, or scheduler locks."],
+["Which condition is NOT required for a deadlock to occur?",["Mutual exclusion","Hold and wait","Preemption allowed","Circular wait"],2,
+ "The four classic deadlock conditions are mutual exclusion, hold-and-wait, NO preemption, and circular wait."],
+["For Rate Monotonic scheduling, as the number of tasks n increases, the utilization bound approaches approximately:",["100%","ln(2) ≈ 69.3%","50%","0%"],1,
+ "Liu & Layland's bound n(2^(1/n)-1) converges to ln(2) ≈ 0.693 as n → ∞."],
+["In FreeRTOS, calling vTaskDelay() places the calling task into which state?",["Running","Blocked (delayed)","Suspended permanently","Ready only"],1,
+ "vTaskDelay() blocks the task for the specified number of ticks, allowing other tasks to run."],
+["Static task allocation (vs dynamic) in an RTOS mainly improves:",["Predictability and avoids heap fragmentation","Code readability only","Network throughput","GPU performance"],0,
+ "Pre-allocating task stacks/TCBs at compile time avoids runtime heap fragmentation and gives deterministic memory behaviour."],
+["In mixed-criticality systems, the primary design goal is to:",["Run all tasks at the same priority","Isolate tasks of different criticality so low-criticality faults don't affect high-criticality tasks","Remove the scheduler entirely","Disable interrupts globally"],1,
+ "Mixed-criticality design partitions resources/time so a failure in a non-critical task cannot compromise safety-critical functions."],
+["Response Time Analysis is used to:",["Verify each task meets its deadline under worst-case interference","Measure power consumption","Test network latency only","Compile code faster"],0,
+ "RTA computes a task's worst-case response time accounting for blocking and preemption from higher-priority tasks."],
+["A semaphore used purely for signaling between an ISR and a task is typically:",["A binary semaphore","A file descriptor","A device tree node","A kernel module"],0,
+ "A binary semaphore (give/take) is the lightweight, ISR-safe primitive commonly used for ISR-to-task signaling."]
+];
+
+/* ---------- IoT (25) ---------- */
+const iot = [
+["Which layer of the IoT architecture is responsible for sensing physical parameters?",["Application layer","Perception layer","Network layer","Middleware layer"],1,
+ "The perception (or sensing) layer contains sensors/actuators that gather raw physical data."],
+["MQTT QoS level 0 means:",["At least once delivery","Exactly once delivery","At most once delivery (fire and forget)","Guaranteed delivery with acknowledgment"],2,
+ "QoS 0 sends the message once with no acknowledgment or retry — it may be lost."],
+["Compared to MQTT, CoAP is primarily designed for:",["TCP-based publish/subscribe only","Constrained devices over UDP using a REST-like model","Only HTTPS communication","Replacing IPv6"],1,
+ "CoAP runs over UDP and mirrors REST methods (GET/POST/PUT/DELETE), suited to very constrained nodes."],
+["Zigbee (IEEE 802.15.4) commonly operates in which frequency band?",["2.4 GHz","5 GHz","60 GHz","433 MHz only"],0,
+ "Zigbee most commonly uses the globally available 2.4 GHz ISM band (also supports 868/915 MHz regionally)."],
+["Compared to Bluetooth Classic, BLE (Bluetooth Low Energy) is designed for:",["Higher data rate streaming","Low power, intermittent small data transfers","Long range cellular communication","Wired communication"],1,
+ "BLE trades throughput for very low power consumption, ideal for periodic small payloads like sensor readings."],
+["LoRaWAN is best characterized as a:",["Low Power Wide Area Network technology","Short range NFC protocol","High bandwidth fiber protocol","Wired industrial bus"],0,
+ "LoRaWAN provides long-range, low-power communication for IoT devices, trading off data rate for range and battery life."],
+["6LoWPAN enables:",["IPv6 communication over low power wireless networks like 802.15.4","Only IPv4 routing","Bluetooth pairing","MQTT broker discovery"],0,
+ "6LoWPAN compresses/adapts IPv6 packets so they can run efficiently over low-power, low-bandwidth links such as 802.15.4."],
+["REST architecture is based on which core principle?",["Stateful sessions only","Stateless client-server communication using standard methods","Binary-only payloads","Mandatory use of an MQTT broker"],1,
+ "REST relies on stateless requests using uniform methods (GET, POST, PUT, DELETE) over resources identified by URIs."],
+["IEEE 802.15.4 primarily defines the standard for:",["Wireless LAN (WiFi)","Low-rate wireless personal area networks (LR-WPAN)","Cellular 5G","Fiber optic communication"],1,
+ "802.15.4 is the PHY/MAC standard underlying Zigbee and other low-rate WPAN technologies."],
+["IEEE 802.11 standards primarily define:",["Wireless LAN (WiFi)","Bluetooth","Zigbee","LoRa"],0,
+ "802.11 is the family of standards that defines WiFi."],
+["NB-IoT (Narrowband IoT) is designed mainly for:",["High-speed video streaming","Low power, wide area cellular connectivity for IoT devices","Local Bluetooth mesh","Wired Ethernet replacement"],1,
+ "NB-IoT is a cellular LPWAN technology optimized for deep coverage, long battery life, and small periodic data."],
+["Edge computing primarily aims to:",["Move all processing to a centralized cloud only","Process data closer to the source to reduce latency","Eliminate the need for sensors","Replace networking entirely"],1,
+ "Edge computing pushes computation near the data source, cutting round-trip latency and bandwidth use."],
+["In MQTT, the broker's main role is to:",["Generate sensor data","Manage publish-subscribe message routing between clients","Encrypt all traffic by default","Replace the need for topics"],1,
+ "The broker receives published messages and routes them to subscribers of the matching topic."],
+["Secure boot in embedded/IoT security ensures that:",["The device boots faster only","The device only runs verified/trusted firmware at startup","The device runs any firmware","All security checks are disabled for speed"],1,
+ "Secure boot cryptographically verifies firmware signatures before execution, preventing unauthorized code from running."],
+["TLS/DTLS are used in IoT primarily to provide:",["Faster data transfer with no encryption","Secure, encrypted communication channels","Power saving","Device pairing only"],1,
+ "TLS (over TCP) and DTLS (over UDP) provide authenticated, encrypted channels for IoT communication."],
+["TensorFlow Lite Micro is designed to run ML models on:",["Large cloud servers only","Resource-constrained microcontrollers","Desktop GPUs exclusively","Mainframe computers"],1,
+ "TFLite Micro is built for inference on MCUs with very limited memory and no OS, enabling embedded AI."],
+["OTA (Over-The-Air) updates in IoT allow:",["Remote firmware updates without physical access","Only hardware replacement","Manual reflashing via JTAG only","Permanently disabling the device"],0,
+ "OTA/FOTA lets devices receive new firmware images over the network, avoiding manual field servicing."],
+["Device provisioning in IoT refers to:",["Manufacturing the device's PCB","Configuring and registering a device for first use on a network/platform","Discarding old devices","Encrypting cloud storage only"],1,
+ "Provisioning sets identity, credentials, and configuration so a device can securely join a network/platform."],
+["A key reason for using IPv6 in large-scale IoT deployments is:",["Smaller address space than IPv4","A vastly larger address space to support billions of devices","It removes the need for routing","It only works with Bluetooth"],1,
+ "IPv6's 128-bit address space comfortably accommodates the scale of globally connected IoT devices."],
+["Which is a common type of IoT sensor used for environmental monitoring?",["Temperature/humidity sensor","GPU","Compiler","Broker"],0,
+ "Temperature, humidity, and similar environmental sensors are core perception-layer components."],
+["Data aggregation at an IoT gateway primarily helps to:",["Increase raw data volume sent to the cloud","Reduce bandwidth usage by combining/summarizing sensor data before transmission","Encrypt all keys","Replace sensors"],1,
+ "Gateways often pre-process or batch readings, sending summarized data upstream instead of every raw sample."],
+["Predictive maintenance in Industrial IoT (IIoT) primarily uses:",["Random scheduling of repairs","Sensor data and analytics to predict equipment failure before it happens","Manual periodic inspection only","Disabling sensors during operation"],1,
+ "Predictive maintenance analyzes continuous sensor/vibration/temperature data to flag failures before they occur."],
+["Smart metering systems primarily enable:",["Manual meter reading only","Automated remote monitoring of utility consumption (electricity/water/gas)","Replacing all utility infrastructure","Blocking data collection"],1,
+ "Smart meters transmit consumption data automatically, eliminating manual reads and enabling fine-grained monitoring."],
+["GDPR is primarily relevant to IoT systems because it:",["Defines wireless frequency bands","Regulates how personal data is collected, stored, and processed","Sets MQTT QoS levels","Defines GPIO pin configurations"],1,
+ "GDPR governs handling of personal data — highly relevant since many IoT systems collect data tied to individuals."],
+["Fog computing differs from edge computing mainly in that fog computing:",["Always runs purely in the cloud","Introduces an intermediate processing layer between edge devices and the cloud","Eliminates the need for any processing","Is identical to edge computing in every way"],1,
+ "Fog computing sits between edge devices and the cloud, aggregating and processing data from many edge nodes."]
+];
+
+/* ---------- Embedded Device Drivers (25) ---------- */
+const edd = [
+["A device driver primarily serves as:",["A user application","An interface between hardware and the operating system/kernel","A network protocol","A compiler tool"],1,
+ "Drivers translate generic kernel I/O calls into the specific operations a piece of hardware understands."],
+["Which device type allows data to be accessed as a stream of bytes (e.g. /dev/ttyS0)?",["Block device","Character device","Network device","Pseudo device only"],1,
+ "Character devices are accessed sequentially as a byte stream, unlike block devices which support random access in fixed-size blocks."],
+["The major number of a device file primarily identifies:",["The specific instance of a device","The driver associated with the device","The file permissions","The mount point"],1,
+ "The major number maps to the driver; the minor number distinguishes individual device instances handled by that driver."],
+["To load a kernel module manually, which command is used?",["insmod","gcc","make install","systemctl"],0,
+ "insmod inserts a compiled .ko module into the running kernel (modprobe is the dependency-aware alternative)."],
+["Which function is called when a kernel module is loaded?",["module_exit()","module_init()","main()","start_kernel()"],1,
+ "module_init() registers the function to run when the module is inserted; module_exit() runs on removal."],
+["The struct that defines callback functions like open, read, write, release for a character device is:",["file_operations","device_tree","task_struct","inode_operations"],0,
+ "struct file_operations holds function pointers the VFS calls for operations on that device file."],
+["To safely copy data from user space to kernel space, a driver should use:",["memcpy()","copy_from_user()","strcpy()","direct pointer dereference"],1,
+ "copy_from_user() validates and safely copies data across the user/kernel boundary, handling page faults correctly."],
+["IOCTL is primarily used in device drivers for:",["Sending custom device-specific commands beyond standard read/write","Loading the kernel module","Allocating kernel memory","Compiling the driver"],0,
+ "ioctl() provides a generic mechanism for user space to issue device-specific control commands."],
+["Kernel timers are typically used to:",["Schedule a function to run after a specified delay","Permanently block interrupts","Replace the scheduler","Allocate memory"],0,
+ "A kernel timer fires a callback once a specified expiry time/jiffies value is reached."],
+["Workqueues in the Linux kernel are mainly used for:",["Deferring work to run later in process context (not interrupt context)","Running code inside an ISR only","Managing GPIO pins exclusively","Compiling kernel modules"],0,
+ "Workqueues let you schedule functions that can sleep, run in process context, deferring heavier work from interrupt handlers."],
+["A spinlock differs from a mutex in that a spinlock:",["Allows the CPU to sleep while waiting","Busy-waits and suits short critical sections, often in interrupt context","Can never be used in kernel code","Is identical to a semaphore"],1,
+ "Spinlocks busy-wait instead of sleeping, making them appropriate for very short critical sections and contexts that can't sleep."],
+["In Linux device drivers, the 'top half' of interrupt handling typically:",["Performs lengthy processing","Quickly acknowledges the interrupt and defers heavy work to the 'bottom half'","Is identical to the bottom half","Runs only at boot time"],1,
+ "The top half (hard IRQ handler) runs with interrupts disabled and should be as fast as possible."],
+["A tasklet in the Linux kernel is:",["A user-space thread","A kernel mechanism for deferred, lightweight interrupt-related processing","A device tree node","A character device"],1,
+ "Tasklets run in softirq context, used for quick deferred work that can't run inside the hard IRQ handler itself."],
+["I2C is best described as a:",["High-speed parallel bus","Two-wire (SDA/SCL) multi-master/multi-slave serial bus","Wireless protocol","USB variant"],1,
+ "I2C uses just two wires (data and clock) and supports multiple masters and slaves on the same bus."],
+["SPI communication typically uses how many primary signal lines (full-duplex, single slave)?",["2","4 (MOSI, MISO, SCLK, CS)","1","8"],1,
+ "Standard SPI uses MOSI, MISO, SCLK, and a chip-select line per slave."],
+["The Linux GPIO framework allows drivers to:",["Configure and control general-purpose input/output pins","Manage only network interfaces","Compile kernel modules","Handle USB enumeration only"],0,
+ "The gpiolib/GPIO descriptor API lets drivers request, configure direction, and set/read GPIO pin state."],
+["A Device Tree (DTS/DTB) is primarily used to:",["Describe hardware configuration to the kernel without hardcoding it in driver source","Replace the Linux kernel entirely","Store user files","Manage network routing tables"],0,
+ "Device Tree externalizes board/hardware description so the same driver binary can support different hardware layouts."],
+["Platform driver-device matching in the Linux device model occurs based on:",["Random assignment","Compatible strings/names matching between platform device and driver","File size","CPU clock speed"],1,
+ "The kernel matches a platform_driver to a platform_device by comparing compatible strings or names defined in the device tree/driver."],
+["sysfs is primarily used to:",["Expose kernel/device attributes to user space as files","Store compiled binaries","Manage network sockets","Replace procfs entirely with no overlap"],0,
+ "sysfs exposes kernel objects and their attributes as a hierarchical filesystem readable/writable from user space."],
+["procfs (/proc) is commonly used for:",["Exposing process and kernel runtime information as a pseudo filesystem","Storing persistent user files","Managing GPIO pins exclusively","Loading bootloaders"],0,
+ "/proc provides runtime introspection into processes and kernel internals without occupying real disk storage."],
+["kmalloc() differs from vmalloc() primarily in that kmalloc():",["Allocates physically contiguous memory, suitable for DMA","Always allocates virtually contiguous but physically scattered memory","Is used only in user space","Cannot be used in kernel space"],0,
+ "kmalloc() guarantees physically contiguous memory (needed for DMA buffers); vmalloc() only guarantees virtual contiguity."],
+["DMA (Direct Memory Access) is primarily used to:",["Allow peripherals to transfer data to/from memory without continuous CPU intervention","Replace the CPU entirely","Manage GPIO interrupts only","Compile kernel modules"],0,
+ "DMA controllers move data between memory and peripherals independently, freeing the CPU for other work."],
+["printk() log levels (e.g. KERN_INFO, KERN_ERR) are used to:",["Indicate the severity/priority of kernel log messages","Set CPU clock speed","Allocate memory","Configure GPIO direction"],0,
+ "Log levels let the kernel and tools like dmesg filter messages by severity, from debug up to emergency."],
+["A race condition in kernel code typically occurs when:",["Multiple contexts access shared data concurrently without proper synchronization","Only one process runs at a time","The kernel is compiled with debugging disabled","GPIO pins are unused"],0,
+ "Without locking, concurrent access from interrupts/processes/CPUs to shared state can produce unpredictable results."],
+["The probe() function in a platform driver is called when:",["The kernel boots for the very first time only","A matching device is found and the driver is being initialized for that device","The module is removed","A user reads from /proc"],1,
+ "probe() runs once the device model matches a device to this driver, performing per-device initialization."]
+];
+
+/* ---------- Aptitude (25) ---------- */
+const apt = [
+["What is the remainder when 2^100 is divided by 7?",["1","2","4","6"],1,
+ "2^3 ≡ 1 (mod 7). 100 = 3×33 + 1, so 2^100 ≡ (2^3)^33 × 2 ≡ 1×2 = 2."],
+["If A:B = 3:4 and B:C = 5:6, find A:C.",["5:8","8:5","3:4","4:3"],0,
+ "Scale to common B: A:B=15:20, B:C=20:24 → A:B:C=15:20:24 → A:C=15:24=5:8."],
+["A invests ₹6000 for 6 months and B invests ₹4000 for 8 months in a business. Find the profit-sharing ratio.",["9:8","8:9","3:2","2:3"],0,
+ "Capital×time: A=6000×6=36000, B=4000×8=32000 → ratio 36:32=9:8."],
+["40% of a number is 80. What is 60% of that number?",["100","110","120","130"],2,
+ "The number = 80/0.4 = 200. 60% of 200 = 120."],
+["A trader bought an item for ₹500 and sold it for ₹600. Find the profit percentage.",["15%","20%","25%","30%"],1,
+ "Profit = 100, Profit% = (100/500)×100 = 20%."],
+["Find the simple interest on ₹5000 at 8% per annum for 3 years.",["₹1000","₹1100","₹1200","₹1300"],2,
+ "SI = P×R×T/100 = 5000×8×3/100 = ₹1200."],
+["Find the compound interest on ₹2000 at 10% per annum for 2 years, compounded annually.",["₹400","₹410","₹420","₹440"],2,
+ "Amount = 2000×(1.1)^2 = 2420. CI = 2420 − 2000 = ₹420."],
+["A car travels 60 km in 1.5 hours and then 90 km in another 1.5 hours. Find its average speed for the whole journey.",["45 km/h","50 km/h","55 km/h","60 km/h"],1,
+ "Total distance = 150 km, total time = 3 h, average speed = 150/3 = 50 km/h."],
+["Two trains, 120 m and 180 m long, run in opposite directions at 54 km/h and 36 km/h. Find the time taken to cross each other.",["10 s","12 s","14 s","16 s"],1,
+ "Relative speed = 90 km/h = 25 m/s. Total length = 300 m. Time = 300/25 = 12 s."],
+["A can complete a work in 12 days and B in 18 days. In how many days can they complete it together?",["6 days","7.2 days","8 days","9 days"],1,
+ "Combined rate = 1/12+1/18 = 5/36 per day → time = 36/5 = 7.2 days."],
+["Pipe A can fill a tank in 10 hours while pipe B can empty it in 15 hours. If both are opened together, in how long will the tank be filled?",["20 h","25 h","30 h","35 h"],2,
+ "Net rate = 1/10 − 1/15 = 1/30 per hour → time = 30 hours."],
+["A boat's downstream speed is 15 km/h and upstream speed is 9 km/h. Find the speed of the stream.",["2 km/h","3 km/h","4 km/h","6 km/h"],1,
+ "Stream speed = (downstream − upstream)/2 = (15−9)/2 = 3 km/h."],
+["The average of 5 numbers is 20. When one number is removed, the average of the remaining 4 becomes 18. Find the removed number.",["24","26","28","30"],2,
+ "Sum of 5 = 100, sum of remaining 4 = 72, removed number = 100−72 = 28."],
+["A mixture of milk and water is in the ratio 3:1. When 4 litres of water is added, the ratio becomes 3:2. Find the initial quantity of milk.",["9 L","12 L","15 L","18 L"],1,
+ "Let milk=3x, water=x. (x+4)/3x = 2/3 → 3x+12=6x → x=4 → milk = 3×4 = 12 L."],
+["Two dice are rolled together. What is the probability that the sum of the numbers is 7?",["1/9","1/6","1/12","5/36"],1,
+ "6 of the 36 equally likely outcomes give a sum of 7, so probability = 6/36 = 1/6."],
+["In how many ways can 5 different books be arranged on a shelf?",["60","100","120","150"],2,
+ "Arrangements of 5 distinct items = 5! = 120."],
+["Find the next number in the series: 2, 6, 12, 20, 30, ?",["36","40","42","44"],2,
+ "Differences increase by 2 each time (4,6,8,10,12), so the next term is 30+12 = 42."],
+["Pointing to a photograph, a man said, 'She is the daughter of my grandfather's only son.' How is the woman related to the man?",["Sister","Mother","Aunt","Cousin"],0,
+ "The grandfather's only son is the man's own father, so the woman (his father's daughter) is the man's sister."],
+["If CAT is coded as DBU, what is the code for DOG using the same logic?",["EPH","EPI","FPH","EQH"],0,
+ "Each letter is shifted forward by 1: D→E, O→P, G→H, giving EPH."],
+["Five friends A, B, C, D, E sit in a row. B sits immediately right of A, D sits immediately left of E, and C sits between B and D. Who sits in the middle?",["A","B","C","D"],2,
+ "The only arrangement satisfying all clues is A-B-C-D-E, so C occupies the middle (3rd) seat."],
+["Statement: All cats are animals. Some animals are dogs. Conclusion: Some cats are dogs. Does the conclusion logically follow?",["Follows","Does not follow","Cannot be determined either way","Both follow and do not follow"],1,
+ "No overlap between cats and dogs is guaranteed by the premises, so the conclusion does not necessarily follow."],
+["In a class, 30 students like Math and 25 like Science, with 10 liking both. How many students like only one of the two subjects (not both)?",["25","30","35","40"],2,
+ "Only Math = 30−10 = 20, Only Science = 25−10 = 15. Total liking exactly one = 20+15 = 35."],
+["What is X's age? Statement I: X is 5 years older than Y. Statement II: Y is 20 years old. Which statement(s) are sufficient?",["Statement I alone is sufficient","Statement II alone is sufficient","Both together are sufficient, neither alone is","Each statement alone is sufficient"],2,
+ "Statement I alone gives only a relative difference; Statement II alone gives only Y's age. Combined: X = 20+5 = 25."],
+["A father is currently 3 times as old as his son. After 12 years, the father will be twice as old as the son. Find the son's current age.",["10 years","12 years","14 years","16 years"],1,
+ "Let son=S, father=3S. 3S+12 = 2(S+12) → 3S+12=2S+24 → S=12."],
+["At what time between 3 and 4 o'clock will the hands of a clock be exactly together?",["3:14","3:16 4/11 min","3:18","3:20"],1,
+ "Hands coincide when 90+0.5m = 6m → m = 90/5.5 = 16 4/11 minutes past 3."]
+];
+
+function pack(arr, subjCode, subjName, prefix){
+  arr.forEach((a,i)=>{
+    Q.push({
+      id: prefix+(i+1),
+      subj: subjCode,
+      subjName: subjName,
+      text: a[0],
+      options: a[1],
+      correct: a[2],
+      explain: a[3]
+    });
+  });
+}
+pack(rtos,"RTOS","Real-Time Operating Systems","R");
+pack(iot,"IOT","Internet of Things","I");
+pack(edd,"EDD","Embedded Device Drivers","D");
+pack(apt,"APT","Aptitude","A");
+
+/* ===================== STATE ===================== */
+const TOTAL = Q.length;
+let state = {
+  current: 0,
+  answers: new Array(TOTAL).fill(null),
+  marked: new Array(TOTAL).fill(false),
+  visited: new Array(TOTAL).fill(false),
+};
+let instantFeedback = false;
+let timeLeft = 60*60;
+let timerHandle = null;
+
+/* ===================== DOM REFS ===================== */
+const startScreen = document.getElementById('startScreen');
+const examScreen = document.getElementById('examScreen');
+const resultScreen = document.getElementById('resultScreen');
+const startBtn = document.getElementById('startBtn');
+const qTag = document.getElementById('qTag');
+const qPos = document.getElementById('qPos');
+const qText = document.getElementById('qText');
+const qOptions = document.getElementById('qOptions');
+const qReveal = document.getElementById('qReveal');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const clearBtn = document.getElementById('clearBtn');
+const markBtn = document.getElementById('markBtn');
+const submitBtn = document.getElementById('submitBtn');
+const navGrid = document.getElementById('navGrid');
+const timerVal = document.getElementById('timerVal');
+const metaAnswered = document.getElementById('metaAnswered');
+const metaMarked = document.getElementById('metaMarked');
+const metaUnanswered = document.getElementById('metaUnanswered');
+
+/* ===================== START ===================== */
+startBtn.addEventListener('click', ()=>{
+  instantFeedback = document.getElementById('instantFeedback').checked;
+  startScreen.classList.add('hidden');
+  examScreen.classList.remove('hidden');
+  buildNavGrid();
+  renderQuestion();
+  startTimer();
+});
+
+/* ===================== TIMER ===================== */
+function startTimer(){
+  timerHandle = setInterval(()=>{
+    timeLeft--;
+    if(timeLeft<=0){ clearInterval(timerHandle); timeLeft=0; finishTest(); }
+    const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
+    const s = (timeLeft%60).toString().padStart(2,'0');
+    timerVal.textContent = m+':'+s;
+  },1000);
+}
+
+/* ===================== RENDER QUESTION ===================== */
+function renderQuestion(){
+  const i = state.current;
+  const q = Q[i];
+  state.visited[i] = true;
+  qTag.textContent = q.subjName.split(' ').slice(0,2).join(' ');
+  qTag.className = 'tag tag-'+q.subj;
+  qPos.textContent = 'Question '+(i+1)+' of '+TOTAL+'  ·  '+q.subjName;
+  qText.textContent = q.text;
+  qOptions.innerHTML = '';
+  const labels = ['A','B','C','D'];
+  q.options.forEach((opt,idx)=>{
+    const div = document.createElement('label');
+    div.className = 'opt'+(state.answers[i]===idx?' selected':'');
+    div.innerHTML = '<input type="radio" name="opt" '+(state.answers[i]===idx?'checked':'')+'><span class="lab">'+labels[idx]+'.</span><span>'+opt+'</span>';
+    div.addEventListener('click', ()=>{
+      state.answers[i] = idx;
+      renderQuestion();
+      if(instantFeedback) showReveal(q, idx);
+    });
+    qOptions.appendChild(div);
+  });
+  qReveal.className = 'reveal';
+  qReveal.innerHTML = '';
+  if(instantFeedback && state.answers[i]!==null){ showReveal(q, state.answers[i]); }
+  markBtn.textContent = state.marked[i] ? 'Unmark Review' : 'Mark for Review';
+  prevBtn.disabled = i===0;
+  nextBtn.textContent = i===TOTAL-1 ? 'Finish' : 'Save & Next →';
+  updateNavGrid();
+  updateMeta();
+}
+function showReveal(q, chosenIdx){
+  const correct = chosenIdx===q.correct;
+  qReveal.className = 'reveal show '+(correct?'correct':'wrong');
+  qReveal.innerHTML = (correct ? '✓ Correct. ' : '✗ Incorrect — correct answer is '+['A','B','C','D'][q.correct]+'. ') + q.explain;
+}
+
+/* ===================== NAV GRID ===================== */
+function buildNavGrid(){
+  navGrid.innerHTML = '';
+  for(let i=0;i<TOTAL;i++){
+    const b = document.createElement('button');
+    b.className = 'navBtn';
+    b.textContent = i+1;
+    b.addEventListener('click', ()=>{ state.current=i; renderQuestion(); });
+    navGrid.appendChild(b);
+  }
+}
+function updateNavGrid(){
+  const btns = navGrid.children;
+  for(let i=0;i<TOTAL;i++){
+    const b = btns[i];
+    b.className = 'navBtn';
+    const answered = state.answers[i]!==null;
+    const marked = state.marked[i];
+    if(answered && marked) b.classList.add('answeredmarked');
+    else if(marked) b.classList.add('marked');
+    else if(answered) b.classList.add('answered');
+    if(i===state.current) b.classList.add('current');
+  }
+}
+function updateMeta(){
+  const answered = state.answers.filter(a=>a!==null).length;
+  const marked = state.marked.filter(Boolean).length;
+  metaAnswered.textContent = answered+' / '+TOTAL;
+  metaMarked.textContent = marked;
+  metaUnanswered.textContent = TOTAL-answered;
+}
+
+/* ===================== CONTROLS ===================== */
+clearBtn.addEventListener('click', ()=>{ state.answers[state.current]=null; renderQuestion(); });
+markBtn.addEventListener('click', ()=>{ state.marked[state.current]=!state.marked[state.current]; renderQuestion(); });
+prevBtn.addEventListener('click', ()=>{ if(state.current>0){ state.current--; renderQuestion(); } });
+nextBtn.addEventListener('click', ()=>{
+  if(state.current<TOTAL-1){ state.current++; renderQuestion(); }
+  else { finishTest(); }
+});
+document.querySelectorAll('[data-jump]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const subj = btn.getAttribute('data-jump');
+    const idx = Q.findIndex(q=>q.subj===subj);
+    state.current = idx;
+    renderQuestion();
+  });
+});
+submitBtn.addEventListener('click', ()=>{
+  if(confirm('Submit the test? You will not be able to change answers afterward.')) finishTest();
+});
+
+/* ===================== RESULTS ===================== */
+function finishTest(){
+  clearInterval(timerHandle);
+  examScreen.classList.add('hidden');
+  resultScreen.classList.remove('hidden');
+
+  let correct=0, attempted=0;
+  const bySubj = {RTOS:{c:0,t:0},IOT:{c:0,t:0},EDD:{c:0,t:0},APT:{c:0,t:0}};
+  Q.forEach((q,i)=>{
+    bySubj[q.subj].t++;
+    if(state.answers[i]!==null){
+      attempted++;
+      if(state.answers[i]===q.correct){ correct++; bySubj[q.subj].c++; }
+    }
+  });
+  const pct = Math.round((correct/TOTAL)*100);
+
+  document.getElementById('resultGrid').innerHTML = `
+    <div class="scoreCard"><div class="big">${correct} / ${TOTAL}</div><div class="lbl">Correct Answers</div><div class="bar"><div style="width:${pct}%"></div></div></div>
+    <div class="scoreCard"><div class="big">${attempted} / ${TOTAL}</div><div class="lbl">Attempted</div></div>
+    <div class="scoreCard"><div class="big">${pct}%</div><div class="lbl">Overall Score</div></div>
+    <div class="scoreCard"><div class="big">${60-Math.floor(timeLeft/60)}m ${(60*60-timeLeft)%60}s</div><div class="lbl">Time Taken</div></div>
+  `;
+
+  const names = {RTOS:'RTOS',IOT:'IoT',EDD:'Drivers',APT:'Aptitude'};
+  document.getElementById('subjectGrid').innerHTML = Object.keys(bySubj).map(k=>{
+    const s=bySubj[k]; const p=Math.round((s.c/s.t)*100);
+    return `<div class="scoreCard"><div class="big">${s.c}/${s.t}</div><div class="lbl">${names[k]}</div><div class="bar"><div style="width:${p}%"></div></div></div>`;
+  }).join('');
+
+  document.getElementById('reviewBtn').onclick = ()=>{
+    const rl = document.getElementById('reviewList');
+    rl.classList.toggle('hidden');
+    if(!rl.dataset.built){
+      rl.innerHTML = Q.map((q,i)=>{
+        const chosen = state.answers[i];
+        const isCorrect = chosen===q.correct;
+        const labels=['A','B','C','D'];
+        return `<div class="reviewItem">
+          <div class="q">${i+1}. [${names[q.subj]}] ${q.text}</div>
+          <div class="a">Your answer: <b class="${chosen===null?'':(isCorrect?'ok':'bad')}">${chosen===null?'Not attempted':labels[chosen]+'. '+q.options[chosen]}</b></div>
+          <div class="a">Correct answer: <b class="ok">${labels[q.correct]}. ${q.options[q.correct]}</b></div>
+          <div class="a" style="color:#6b6557;">${q.explain}</div>
+        </div>`;
+      }).join('');
+      rl.dataset.built = '1';
+    }
+  };
+  document.getElementById('retakeBtn').onclick = ()=> location.reload();
+}
+</script>
+</body>
+</html>
